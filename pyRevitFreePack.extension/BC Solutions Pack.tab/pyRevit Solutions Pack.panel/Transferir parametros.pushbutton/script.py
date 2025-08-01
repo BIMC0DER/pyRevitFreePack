@@ -6,11 +6,18 @@ __doc__ = """
 _____________________________________________________________________
 Descrição:
 
+Transfere valores entre um parâmetro A e um parâmetro B
 
 _____________________________________________________________________
 Passo a passo (do script):
 
+>>> Escolha se são elementos de Tipo ou Instância
 
+>>> Defina a Categoria
+
+>>> Defina o nome do parâmetro de origem
+
+>>> Defina o nome do parâmetro de destino
 
 _____________________________________________________________________
 Última atualização:
@@ -58,7 +65,6 @@ PATH_SCRIPT = os.path.dirname(__file__)
 #|  _|  | |_| || |\  || |___   | |   | | | |_| || |\  | ___) |
 #|_|     \___/ |_| \_| \____|  |_|  |___| \___/ |_| \_||____/ 
 
-
 def get_param_value(param):
     """Obtém a propriedade correta do tipo de dado do parâmetro"""
     # Obter o StorageType
@@ -76,46 +82,54 @@ def get_param_value(param):
     else: # É string
         return param.AsString()
 
+
+
+
+
+
 def main():
-    # Formulário para selecionar se é tipo ou instância
+    # Formulário para verificar se é tipo ou instância
     is_type_instance = forms.CommandSwitchWindow.show(
     ['Tipo','Instância'],
-     message='Tipo ou Instância?',
+     message='Selecione se for Tipo ou Instância',
     )
 
-    # Formulário para escolher a categoria
+    # Formulário para selecionar Categoria
     category = select_category(doc).selected_value
 
-    # Formulário para escolher o parâmetro de origem
-    source_param_name = forms.ask_for_string(prompt="Nome do Parâmetro de Origem",title=__title__)
+    # Formulário para digitar o parâmetro de origem (source)
+    source_param_name = forms.ask_for_string(prompt="Defina o nome do parâmetro de origem",title=__title__)
 
-    # Formulário para escolher o parâmetro de destino
-    target_param_name = forms.ask_for_string(prompt="Nome do Parâmetro de Destino",title=__title__)
+    # Formulário para digitar o parâmetro de destino (target)
+    target_param_name = forms.ask_for_string(prompt="Defina o nome do parâmetro de destino",title=__title__)
 
-    # Obter os elementos - Origem
+    # Obter os elementos
     collector = FilteredElementCollector(doc).OfCategory(category)
 
     if is_type_instance == "Tipo":
         elements = collector.WhereElementIsElementType().ToElements()
+    
     elif is_type_instance == "Instância":
         elements = collector.WhereElementIsNotElementType().ToElements()
+    
     else:
         forms.alert("Tipo ou Instância não definido",exitscript=True)
-        
+
     
     # Inserir os parâmetros
     for element in elements:
-        # Obter o valor do parâmetro de origem
+        # Obter o valor de origem
         source_param_value = get_param_value(element.LookupParameter(source_param_name))
 
         # Obter o parâmetro de destino
         target_param = element.LookupParameter(target_param_name)
 
-        # Inserir valor no parâmetro de destino
-        try: 
+        try:
             target_param.Set(source_param_value)
         except:
             continue
+
+
 
 
 
