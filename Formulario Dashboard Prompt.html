@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Prompt - Dashboard Revit CSV</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --bg-color: #f8fafc;
+            --card-color: #ffffff;
+            --text-color: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-color) 0%, #e2e8f0 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-section {
+            background: var(--card-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-section:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .checkbox-item:hover {
+            background-color: #f1f5f9;
+        }
+
+        .checkbox-item input[type="checkbox"],
+        .checkbox-item input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .priority-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .priority-title {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .generate-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+        }
+
+        .generate-btn {
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .prompt-output {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            min-height: 150px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .copy-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+        }
+
+        .copy-btn.copied {
+            background: #10b981;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .form-section {
+                padding: 1.5rem;
+            }
+
+            .checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .emoji {
+            font-style: normal;
+            margin-right: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Gerador de Prompt Dashboard</h1>
+            <p>Crie prompts personalizados para gerar dashboards incríveis a partir dos seus dados CSV do Revit</p>
+        </div>
+
+        <form id="promptForm">
+            <!-- Seção 1: Foco da Análise -->
+            <div class="form-section">
+                <h2 class="section-title"><span class="emoji">🎯</span>Foco da Análise</h2>
+                <p class="section-description">Qual é o objetivo principal da sua dashboard?</p>
+                <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                        <input type="radio" id="quantitativo" name="foco" value="quantitativo">
+                        <label for="quantitativo">📊 Quantitativo (totais, contagens, somatórias)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="comparativo" name="foco" value="comparativo">
+                        <label for="comparativo">📈 Comparativo (comparar categorias e tipos)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="distributivo" name="foco" value="distributivo">
+                        <label for="distributivo">🥧 Distributivo (percentuais, proporções)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="correlacional" name="foco" value="correlacional">
+                        <label for="correlacional">🔗 Correlacional (relações entre métricas)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="temporal" name="foco" value="temporal">
+                        <label for="temporal">⏱️ Temporal (evolução ao longo do tempo)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="geografico" name="foco" value="geografico">
+                        <label for="geografico">🗺️ Geográfico (por localização/pavimento)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="exploratorio" name="foco" value="exploratorio">
+                        <label for="exploratorio">🔍 Exploratório (descobrir padrões)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 2: Nível de Detalhamento -->
+            <div class="form-section">
+                <h2 class="section-title"><span class="emoji">🎚️</span>Nível de Detalhamento</h2>
+                <p class="section-description">Quanto detalhe você quer na dashboard?</p>
+                <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                        <input type="radio" id="executivo" name="nivel" value="executivo">
+                        <label for="executivo">👔 Executivo (3-4 visualizações principais)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="gerencial" name="nivel" value="gerencial">
+                        <label for="gerencial">📋 Gerencial (5-8 visualizações equilibradas)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="analitico" name="nivel" value="analitico">
+                        <label for="analitico">🔬 Analítico (8-12 visualizações detalhadas)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="radio" id="tecnico" name="nivel" value="tecnico">
+                        <label for="tecnico">⚙️ Técnico (12+ visualizações completas)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 3: Visualizações Prioritárias -->
+            <div class="form-section">
+                <h2 class="section-title"><span class="emoji">📊</span>Visualizações Preferidas</h2>
+                <p class="section-description">Marque os tipos de gráficos que mais te interessam</p>
+                
+                <div class="priority-section">
+                    <h3 class="priority-title">🔥 Alta Prioridade</h3>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="barras" name="viz_alta" value="barras">
+                            <label for="barras">📊 Gráficos de barras</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tabelas" name="viz_alta" value="tabelas">
+                            <label for="tabelas">📋 Tabelas dinâmicas</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="kpis" name="viz_alta" value="kpis">
+                            <label for="kpis">🎯 Indicadores KPI</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pizza" name="viz_alta" value="pizza">
+                            <label for="pizza">🥧 Gráficos de pizza</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="priority-section">
+                    <h3 class="priority-title">🔶 Média Prioridade</h3>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="linha" name="viz_media" value="linha">
+                            <label for="linha">📈 Gráficos de linha</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="histograma" name="viz_media" value="histograma">
+                            <label for="histograma">📊 Histogramas</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="boxplot" name="viz_media" value="boxplot">
+                            <label for="boxplot">📦 Box plots</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="heatmap" name="viz_media" value="heatmap">
+                            <label for="heatmap">🔥 Mapas de calor</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="priority-section">
+                    <h3 class="priority-title">📋 Se Aplicável</h3>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="dispersao" name="viz_aplicavel" value="dispersao">
+                            <label for="dispersao">💫 Gráficos de dispersão</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="area" name="viz_aplicavel" value="area">
+                            <label for="area">🏔️ Gráficos de área</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="timeline" name="viz_aplicavel" value="timeline">
+                            <label for="timeline">⏰ Timeline</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="rede" name="viz_aplicavel" value="rede">
+                            <label for="rede">🕸️ Gráficos de rede</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 4: Interatividade -->
+            <div class="form-section">
+                <h2 class="section-title"><span class="emoji">🎮</span>Interatividade Desejada</h2>
+                <p class="section-description">Que controles o usuário deve ter na dashboard?</p>
+                <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="filtros_auto" name="interatividade" value="filtros_auto">
+                        <label for="filtros_auto">🔍 Filtros automáticos por categorias</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="seletores" name="interatividade" value="seletores">
+                        <label for="seletores">⚙️ Seletores de métricas</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="busca" name="interatividade" value="busca">
+                        <label for="busca">🔎 Busca por texto</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="intervalos" name="interatividade" value="intervalos">
+                        <label for="intervalos">📏 Controles de intervalo</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="agrupamento" name="interatividade" value="agrupamento">
+                        <label for="agrupamento">📂 Agrupamento dinâmico</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="export" name="interatividade" value="export">
+                        <label for="export">💾 Export de dados</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="zoom" name="interatividade" value="zoom">
+                        <label for="zoom">🔍 Zoom e pan</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 5: Layout -->
+            <div class="form-section">
+                <h2 class="section-title"><span class="emoji">🎨</span>Layout e Organização</h2>
+                <p class="section-description">Como organizar a dashboard?</p>
+                
+                <div class="priority-section">
+                    <h3 class="priority-title">Estrutura</h3>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item">
+                            <input type="radio" id="topdown" name="estrutura" value="topdown">
+                            <label for="topdown">⬇️ Top-down (KPIs no topo)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="grid" name="estrutura" value="grid">
+                            <label for="grid">🏢 Grid responsivo</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="categoria" name="estrutura" value="categoria">
+                            <label for="categoria">📁 Por categoria de dados</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="progressivo" name="estrutura" value="progressivo">
+                            <label for="progressivo">🎯 Progressivo (geral → específico)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="comparativo_layout" name="estrutura" value="comparativo_layout">
+                            <label for="comparativo_layout">↔️ Comparativo lado a lado</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="priority-section">
+                    <h3 class="priority-title">Densidade</h3>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item">
+                            <input type="radio" id="compacta" name="densidade" value="compacta">
+                            <label for="compacta">📦 Compacta (máximo de informação)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="equilibrada" name="densidade" value="equilibrada">
+                            <label for="equilibrada">⚖️ Equilibrada (boa legibilidade)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="espacosa" name="densidade" value="espacosa">
+                            <label for="espacosa">🌟 Espaçosa (foco em clareza)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 6: Estilo -->
+            <div class="form-section">
+                <h2 class="section-title"><span class="emoji">🎨</span>Estilo e Apresentação</h2>
+                <p class="section-description">Qual aparência você prefere?</p>
+                
+                <div class="priority-section">
+                    <h3 class="priority-title">Paleta de Cores</h3>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item">
+                            <input type="radio" id="azul" name="paleta" value="azul">
+                            <label for="azul">🔵 Azul profissional</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="verde" name="paleta" value="verde">
+                            <label for="verde">🟢 Verde sustentabilidade</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="neutro" name="paleta" value="neutro">
+                            <label for="neutro">⚪ Neutro/minimalista</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="colorido" name="paleta" value="colorido">
+                            <label for="colorido">🌈 Colorido/categórico</label>
+                        </div>
+                    </div>
+                    <input type="text" class="text-input" placeholder="Ou descreva sua paleta personalizada..." name="paleta_custom">
+                </div>
+
+                <div class="priority-section">
+                    <h3 class="priority-title">Estilo Geral</h3>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item">
+                            <input type="radio" id="corporativo" name="estilo" value="corporativo">
+                            <label for="corporativo">👔 Corporativo/formal</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="moderno" name="estilo" value="moderno">
+                            <label for="moderno">✨ Moderno/clean</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="tecnico_estilo" name="estilo" value="tecnico_estilo">
+                            <label for="tecnico_estilo">⚙️ Técnico/detalhado</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="apresentacao" name="estilo" value="apresentacao">
+                            <label for="apresentacao">🎯 Apresentação/executivo</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 7: Insights Automáticos -->
+            <div class="form-section">
+                <h2 class="section-title"><span class="emoji">🧠</span>Insights Automáticos</h2>
+                <p class="section-description">Que análises automáticas você quer que o Claude identifique?</p>
+                <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="outliers" name="insights" value="outliers">
+                        <label for="outliers">⚠️ Valores atípicos (outliers)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="padroes" name="insights" value="padroes">
+                        <label for="padroes">🔍 Padrões e tendências</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="correlacoes" name="insights" value="correlacoes">
+                        <label for="correlacoes">🔗 Correlações significativas</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="estatisticas" name="insights" value="estatisticas">
+                        <label for="estatisticas">📊 Resumos estatísticos</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="recomendacoes" name="insights" value="recomendacoes">
+                        <label for="recomendacoes">💡 Recomendações de ações</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="benchmarks" name="insights" value="benchmarks">
+                        <label for="benchmarks">📏 Comparações com benchmarks</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção de Customização -->
+            <div class="form-section">
+                <h2 class="section-title"><span class="emoji">✏️</span>Customizações Extras</h2>
+                <p class="section-description">Alguma especificação adicional?</p>
+                <textarea class="text-input" rows="4" placeholder="Descreva qualquer requisito específico, métricas especiais, ou funcionalidades que você quer na dashboard..." name="customizacoes"></textarea>
+            </div>
+        </form>
+
+        <!-- Seção de Geração -->
+        <div class="form-section generate-section">
+            <h2 class="section-title" style="color: white;"><span class="emoji">🚀</span>Gerar Prompt</h2>
+            <p style="margin-bottom: 1.5rem;">Clique para gerar seu prompt personalizado baseado nas suas seleções</p>
+            <button type="button" class="generate-btn" onclick="generatePrompt()">
+                🎯 Gerar Prompt Personalizado
+            </button>
+            <div id="promptOutput" class="prompt-output"></div>
+            <button type="button" id="copyBtn" class="copy-btn" onclick="copyPrompt()">
+                📋 Copiar Prompt
+            </button>
+        </div>
+
+        <div class="footer">
+            <p>💡 <strong>Como usar:</strong> Após gerar o prompt, cole-o no Claude junto com seu arquivo CSV do Revit para criar a dashboard perfeita!</p>
+        </div>
+    </div>
+
+    <script>
+        function generatePrompt() {
+            const form = document.getElementById('promptForm');
+            const formData = new FormData(form);
+            
+            // Coleta dados do formulário
+            const foco = formData.get('foco') || 'exploratório';
+            const nivel = formData.get('nivel') || 'gerencial';
+            const estrutura = formData.get('estrutura') || 'grid';
+            const densidade = formData.get('densidade') || 'equilibrada';
+            const paleta = formData.get('paleta') || 'azul';
+            const paletaCustom = formData.get('paleta_custom');
+            const estilo = formData.get('estilo') || 'moderno';
+            const customizacoes = formData.get('customizacoes');
+
+            // Coleta checkboxes múltiplos
+            const vizAlta = formData.getAll('viz_alta');
+            const vizMedia = formData.getAll('viz_media');
+            const vizAplicavel = formData.getAll('viz_aplicavel');
+            const interatividade = formData.getAll('interatividade');
+            const insights = formData.getAll('insights');
+
+            // Mapeamento de valores para texto legível
+            const focoMap = {
+                'quantitativo': 'análise quantitativa (totais, contagens, somatórias)',
+                'comparativo': 'análise comparativa (comparar categorias e tipos)',
+                'distributivo': 'análise distributiva (percentuais, proporções)',
+                'correlacional': 'análise correlacional (relações entre métricas)',
+                'temporal': 'análise temporal (evolução ao longo do tempo)',
+                'geografico': 'análise geográfica (distribuição por localização/pavimento)',
+                'exploratorio': 'análise exploratória (descobrir padrões automaticamente)'
+            };
+
+            const nivelMap = {
+                'executivo': 'executivo (3-4 visualizações principais com KPIs)',
+                'gerencial': 'gerencial (5-8 visualizações equilibradas com filtros básicos)',
+                'analitico': 'analítico (8-12 visualizações detalhadas com múltiplos filtros)',
+                'tecnico': 'técnico (12+ visualizações completas com máximo detalhe)'
+            };
+
+            const estruturaMap = {
+                'topdown': 'top-down com KPIs no topo e detalhes embaixo',
+                'grid': 'grid responsivo com organização automática',
+                'categoria': 'agrupada por categoria de dados',
+                'progressivo': 'progressiva do geral para o específico',
+                'comparativo_layout': 'comparativa lado a lado'
+            };
+
+            const densidadeMap = {
+                'compacta': 'compacta (máximo de informação por tela)',
+                'equilibrada': 'equilibrada (boa legibilidade)',
+                'espacosa': 'espaçosa (foco em clareza)'
+            };
+
+            const paletaMap = {
+                'azul': 'azul profissional',
+                'verde': 'verde sustentabilidade',
+                'neutro': 'neutro/minimalista',
+                'colorido': 'colorido/categórico'
+            };
+
+            const estiloMap = {
+                'corporativo': 'corporativo/formal',
+                'moderno': 'moderno/clean',
+                'tecnico_estilo': 'técnico/detalhado',
+                'apresentacao': 'apresentação/executivo'
+            };
+
+            // Constrói as listas de visualizações
+            const vizTexts = [];
+            if (vizAlta.length > 0) vizTexts.push(`Alta prioridade: ${vizAlta.join(', ')}`);
+            if (vizMedia.length > 0) vizTexts.push(`Média prioridade: ${vizMedia.join(', ')}`);
+            if (vizAplicavel.length > 0) vizTexts.push(`Se aplicável: ${vizAplicavel.join(', ')}`);
+
+            // Gera o prompt
+            const prompt = `Analise o arquivo CSV fornecido e crie uma dashboard HTML interativa seguindo estas especificações:
+
+**ETAPA 1 - ANÁLISE AUTOMÁTICA:**
+- Examine todos os cabeçalhos e identifique tipos de dados, unidades, categorias de elementos do Revit
+- Determine quais colunas são quantitativas, categóricas, hierárquicas
+- Identifique padrões como: 'Area/Área' (m²), 'Volume' (m³), 'Count/Quantidade' (contadores), 'Type/Tipo/Family' (categorias), 'Level/Pavimento' (agrupamentos), 'Cost/Custo' (financeiro)
+- Sugira as 3-5 visualizações mais relevantes baseado nos dados encontrados
+- Identifique possíveis KPIs principais automaticamente
+
+**ETAPA 2 - CRIAÇÃO DA DASHBOARD:**
+- **Foco:** ${focoMap[foco]}
+- **Nível:** ${nivelMap[nivel]}
+- **Visualizações:** ${vizTexts.length > 0 ? vizTexts.join('; ') : 'Use as mais adequadas baseado nos dados'}
+- **Interatividade:** ${interatividade.length > 0 ? interatividade.join(', ') : 'Filtros básicos automáticos'}
+- **Estrutura:** ${estruturaMap[estrutura]}
+- **Densidade:** ${densidadeMap[densidade]}
+- **Estilo:** ${estiloMap[estilo]}
+- **Paleta:** ${paletaCustom ? paletaCustom : paletaMap[paleta]}
+- **Insights automáticos:** ${insights.length > 0 ? insights.join(', ') : 'Identifique padrões principais'}${customizacoes ? `\n- **Requisitos especiais:** ${customizacoes}` : ''}
+
+**ETAPA 3 - APRESENTAÇÃO:**
+- Crie tooltips informativos para todos os gráficos
+- Adicione títulos descritivos baseados no conteúdo real dos dados
+- Inclua resumo executivo com principais descobertas no topo
+- Garanta responsividade e navegação intuitiva
+- Use bibliotecas modernas (Plotly/D3.js) para visualizações profissionais
+
+**INSTRUÇÕES FINAIS:**
+- Explique as escolhas de visualização baseadas na análise dos dados
+- Destaque insights mais importantes encontrados automaticamente
+- Crie uma experiência de usuário fluida e profissional
+- Foque na usabilidade e clareza das informações apresentadas`;
+
+            // Exibe o prompt
+            const output = document.getElementById('promptOutput');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            output.textContent = prompt;
+            output.style.display = 'block';
+            copyBtn.style.display = 'inline-block';
+            
+            // Scroll para o resultado
+            output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function copyPrompt() {
+            const output = document.getElementById('promptOutput');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            navigator.clipboard.writeText(output.textContent).then(() => {
+                copyBtn.textContent = '✅ Copiado!';
+                copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copiar Prompt';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar: ', err);
+                alert('Erro ao copiar. Tente selecionar e copiar manualmente.');
+            });
+        }
+
+        // Adiciona animações aos checkboxes
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxItems = document.querySelectorAll('.checkbox-item');
+            checkboxItems.forEach(item => {
+                const input = item.querySelector('input');
+                input.addEventListener('change', function() {
+                    if (this.checked) {
+                        item.style.backgroundColor = '#e0f2fe';
+                        item.style.borderLeft = '3px solid var(--primary-color)';
+                    } else {
+                        item.style.backgroundColor = '';
+                        item.style.borderLeft = '';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
